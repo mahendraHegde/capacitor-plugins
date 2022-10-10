@@ -325,9 +325,8 @@ requestPermissions() => Promise<PermissionStatus>
 
 Request permission to receive push notifications.
 
-On Android SDK 32 and below it doesn't prompt for permission because you can always
-receive push notifications. On Android SDK 33 and above notifications permissions
-work similar to iOS.
+On Android it doesn't prompt for permission because you can always
+receive push notifications.
 
 On iOS, the first time you use the function, it will prompt the user
 for push notification permission and return granted or denied based

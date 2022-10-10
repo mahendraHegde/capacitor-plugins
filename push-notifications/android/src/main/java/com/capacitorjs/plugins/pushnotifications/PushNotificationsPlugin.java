@@ -49,6 +49,36 @@ public class PushNotificationsPlugin extends Plugin {
         notificationChannelManager = new NotificationChannelManager(getActivity(), notificationManager, getConfig());
     }
 
+    private String getNotificationPermissionText() {
+        if (notificationManager.areNotificationsEnabled()) {
+            return "granted";
+        } else {
+            return "denied";
+        }
+    }
+
+    @PluginMethod
+    public void requestPermissions(PluginCall call) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            JSObject permissionsResultJSON = new JSObject();
+            permissionsResultJSON.put("receive", getNotificationPermissionText());
+            call.resolve(permissionsResultJSON);
+        } else {
+            super.requestPermissions(call);
+        }
+    }
+
+    @PluginMethod
+    public void checkPermissions(PluginCall call) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            JSObject permissionsResultJSON = new JSObject();
+            permissionsResultJSON.put("receive", getNotificationPermissionText());
+            call.resolve(permissionsResultJSON);
+        } else {
+            super.checkPermissions(call);
+        }
+    }
+
     @Override
     protected void handleOnNewIntent(Intent data) {
         super.handleOnNewIntent(data);
