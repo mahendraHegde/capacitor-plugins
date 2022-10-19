@@ -18,9 +18,11 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Base64;
+
 import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
+
 import com.getcapacitor.FileUtils;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -33,6 +35,7 @@ import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -47,14 +50,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
 import org.json.JSONException;
 
 /**
  * The Camera plugin makes it easy to take a photo or have the user select a photo
  * from their albums.
- *
+ * <p>
  * On Android, this plugin sends an intent that opens the stock Camera app.
- *
+ * <p>
  * Adapted from https://developer.android.com/training/camera/photobasics.html
  */
 @SuppressLint("InlinedApi")
@@ -160,17 +164,17 @@ public class CameraPlugin extends Plugin {
         final CameraBottomSheetDialogFragment fragment = new CameraBottomSheetDialogFragment();
         fragment.setTitle(call.getString("promptLabelHeader", "Photo"));
         fragment.setOptions(
-            options,
-            index -> {
-                if (index == 0) {
-                    settings.setSource(CameraSource.PHOTOS);
-                    openPhotos(call);
-                } else if (index == 1) {
-                    settings.setSource(CameraSource.CAMERA);
-                    openCamera(call);
-                }
-            },
-            () -> call.reject("User cancelled photos app")
+                options,
+                index -> {
+                    if (index == 0) {
+                        settings.setSource(CameraSource.PHOTOS);
+                        openPhotos(call);
+                    } else if (index == 1) {
+                        settings.setSource(CameraSource.CAMERA);
+                        openCamera(call);
+                    }
+                },
+                () -> call.reject("User cancelled photos app")
         );
         fragment.show(getActivity().getSupportFragmentManager(), "capacitorModalsActionSheet");
     }
@@ -235,8 +239,8 @@ public class CameraPlugin extends Plugin {
     /**
      * Completes the plugin call after a camera permission request
      *
-     * @see #getPhoto(PluginCall)
      * @param call the plugin call
+     * @see #getPhoto(PluginCall)
      */
     @PermissionCallback
     private void cameraPermissionsCallback(PluginCall call) {
@@ -350,7 +354,7 @@ public class CameraPlugin extends Plugin {
             try {
                 if (multiple) {
                     intent.putExtra("multi-pick", multiple);
-                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] { "image/*" });
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*"});
                     startActivityForResult(call, intent, "processPickedImages");
                 } else {
                     startActivityForResult(call, intent, "processPickedImage");
