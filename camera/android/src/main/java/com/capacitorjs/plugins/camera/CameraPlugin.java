@@ -198,9 +198,9 @@ public class CameraPlugin extends Plugin {
             isFirstRequest = false;
             String[] aliases;
             if (needCameraPerms) {
-                aliases = new String[] { CAMERA, PHOTOS };
+                aliases = new String[]{CAMERA, PHOTOS};
             } else {
-                aliases = new String[] { PHOTOS };
+                aliases = new String[]{PHOTOS};
             }
             requestPermissionForAliases(aliases, call, "cameraPermissionsCallback");
             return false;
@@ -403,24 +403,13 @@ public class CameraPlugin extends Plugin {
         Intent data = result.getData();
         if (data != null) {
             Executor executor = Executors.newSingleThreadExecutor();
-            executor.execute(
-                () -> {
-                    JSObject ret = new JSObject();
-                    JSArray photos = new JSArray();
-                    if (data.getClipData() != null) {
-                        int count = data.getClipData().getItemCount();
-                        for (int i = 0; i < count; i++) {
-                            Uri imageUri = data.getClipData().getItemAt(i).getUri();
-                            JSObject processResult = processPickedImages(imageUri);
-                            if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
-                                call.reject(processResult.getString("error"));
-                                return;
-                            } else {
-                                photos.put(processResult);
-                            }
-                        }
-                    } else if (data.getData() != null) {
-                        Uri imageUri = data.getData();
+            executor.execute(() -> {
+                JSObject ret = new JSObject();
+                JSArray photos = new JSArray();
+                if (data.getClipData() != null) {
+                    int count = data.getClipData().getItemCount();
+                    for (int i = 0; i < count; i++) {
+                        Uri imageUri = data.getClipData().getItemAt(i).getUri();
                         JSObject processResult = processPickedImages(imageUri);
                         if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
                             call.reject(processResult.getString("error"));
@@ -452,15 +441,17 @@ public class CameraPlugin extends Plugin {
                                         } catch (SecurityException ex) {
                                             call.reject("SecurityException");
                                         }
+                                    } catch (SecurityException ex) {
+                                        call.reject("SecurityException");
                                     }
                                 }
                             }
                         }
                     }
-                    ret.put("photos", photos);
-                    call.resolve(ret);
                 }
-            );
+                ret.put("photos", photos);
+                call.resolve(ret);
+            });
         } else {
             call.reject("No images picked");
         }
@@ -570,6 +561,7 @@ public class CameraPlugin extends Plugin {
     /**
      * Save the modified image on the same path,
      * or on a temporary location if it's a content url
+     *
      * @param uri
      * @param is
      * @return
@@ -613,6 +605,7 @@ public class CameraPlugin extends Plugin {
 
     /**
      * After processing the image, return the final result back to the caller.
+     *
      * @param call
      * @param bitmap
      * @param u
@@ -667,12 +660,7 @@ public class CameraPlugin extends Plugin {
                         isSaved = false;
                     }
                 } else {
-                    String inserted = MediaStore.Images.Media.insertImage(
-                        getContext().getContentResolver(),
-                        fileToSavePath,
-                        fileToSave.getName(),
-                        ""
-                    );
+                    String inserted = MediaStore.Images.Media.insertImage(getContext().getContentResolver(), fileToSavePath, fileToSave.getName(), "");
 
                     if (inserted == null) {
                         isSaved = false;
@@ -737,7 +725,8 @@ public class CameraPlugin extends Plugin {
         try {
             bis = new ByteArrayInputStream(bitmapOutputStream.toByteArray());
             newUri = saveImage(u, bis);
-        } catch (IOException ex) {} finally {
+        } catch (IOException ex) {
+        } finally {
             if (bis != null) {
                 try {
                     bis.close();
@@ -752,6 +741,7 @@ public class CameraPlugin extends Plugin {
     /**
      * Apply our standard processing of the bitmap, returning a new one and
      * recycling the old one in the process
+     *
      * @param bitmap
      * @param imageUri
      * @param exif
