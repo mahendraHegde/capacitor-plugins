@@ -70,6 +70,7 @@ public class CameraPlugin extends Plugin {
     // Permission alias constants
     static final String CAMERA = "camera";
     static final String PHOTOS = "photos";
+    static final String PHOTOS_TIRAMISU = "photos_tiramisu";
 
     // Message constants
     private static final String INVALID_RESULT_TYPE_ERROR = "Invalid resultType option";
@@ -178,9 +179,9 @@ public class CameraPlugin extends Plugin {
             isFirstRequest = false;
             String[] aliases;
             if (needCameraPerms) {
-                aliases = new String[] { CAMERA, PHOTOS };
+                aliases = new String[]{CAMERA, PHOTOS};
             } else {
-                aliases = new String[] { PHOTOS };
+                aliases = new String[]{PHOTOS};
             }
             requestPermissionForAliases(aliases, call, "cameraPermissionsCallback");
             return false;
@@ -194,9 +195,16 @@ public class CameraPlugin extends Plugin {
     }
 
     private boolean checkPhotosPermissions(PluginCall call) {
-        if (getPermissionState(PHOTOS) != PermissionState.GRANTED) {
-            requestPermissionForAlias(PHOTOS, call, "cameraPermissionsCallback");
-            return false;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            if (getPermissionState(PHOTOS) != PermissionState.GRANTED) {
+                requestPermissionForAlias(PHOTOS, call, "cameraPermissionsCallback");
+                return false;
+            }
+        } else {
+            if (getPermissionState(PHOTOS_TIRAMISU) != PermissionState.GRANTED) {
+                requestPermissionForAlias(PHOTOS_TIRAMISU, call, "cameraPermissionsCallback");
+                return false;
+            }
         }
         return true;
     }
@@ -216,10 +224,16 @@ public class CameraPlugin extends Plugin {
                 Logger.debug(getLogTag(), "User denied camera permission: " + getPermissionState(CAMERA).toString());
                 call.reject(PERMISSION_DENIED_ERROR_CAMERA);
                 return;
-            } else if (settings.getSource() == CameraSource.PHOTOS && getPermissionState(PHOTOS) != PermissionState.GRANTED) {
-                Logger.debug(getLogTag(), "User denied photos permission: " + getPermissionState(PHOTOS).toString());
-                call.reject(PERMISSION_DENIED_ERROR_PHOTOS);
-                return;
+            } else if (settings.getSource() == CameraSource.PHOTOS) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && getPermissionState(PHOTOS) != PermissionState.GRANTED) {
+                    Logger.debug(getLogTag(), "User denied photos permission: " + getPermissionState(PHOTOS).toString());
+                    call.reject(PERMISSION_DENIED_ERROR_PHOTOS);
+                    return;
+                } else if (getPermissionState(PHOTOS_TIRAMISU) != PermissionState.GRANTED) {
+                    Logger.debug(getLogTag(), "User denied photos permission: " + getPermissionState(PHOTOS_TIRAMISU).toString());
+                    call.reject(PERMISSION_DENIED_ERROR_PHOTOS);
+                    return;
+                }
             }
             doShow(call);
         }
@@ -344,24 +358,13 @@ public class CameraPlugin extends Plugin {
         Intent data = result.getData();
         if (data != null) {
             Executor executor = Executors.newSingleThreadExecutor();
-            executor.execute(
-                () -> {
-                    JSObject ret = new JSObject();
-                    JSArray photos = new JSArray();
-                    if (data.getClipData() != null) {
-                        int count = data.getClipData().getItemCount();
-                        for (int i = 0; i < count; i++) {
-                            Uri imageUri = data.getClipData().getItemAt(i).getUri();
-                            JSObject processResult = processPickedImages(imageUri);
-                            if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
-                                call.reject(processResult.getString("error"));
-                                return;
-                            } else {
-                                photos.put(processResult);
-                            }
-                        }
-                    } else if (data.getData() != null) {
-                        Uri imageUri = data.getData();
+            executor.execute(() -> {
+                JSObject ret = new JSObject();
+                JSArray photos = new JSArray();
+                if (data.getClipData() != null) {
+                    int count = data.getClipData().getItemCount();
+                    for (int i = 0; i < count; i++) {
+                        Uri imageUri = data.getClipData().getItemAt(i).getUri();
                         JSObject processResult = processPickedImages(imageUri);
                         if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
                             call.reject(processResult.getString("error"));
@@ -369,34 +372,43 @@ public class CameraPlugin extends Plugin {
                         } else {
                             photos.put(processResult);
                         }
-                    } else if (data.getExtras() != null) {
-                        Bundle bundle = data.getExtras();
-                        if (bundle.keySet().contains("selectedItems")) {
-                            ArrayList<Parcelable> fileUris = bundle.getParcelableArrayList("selectedItems");
-                            if (fileUris != null) {
-                                for (Parcelable fileUri : fileUris) {
-                                    if (fileUri instanceof Uri) {
-                                        Uri imageUri = (Uri) fileUri;
-                                        try {
-                                            JSObject processResult = processPickedImages(imageUri);
-                                            if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
-                                                call.reject(processResult.getString("error"));
-                                                return;
-                                            } else {
-                                                photos.put(processResult);
-                                            }
-                                        } catch (SecurityException ex) {
-                                            call.reject("SecurityException");
+                    }
+                } else if (data.getData() != null) {
+                    Uri imageUri = data.getData();
+                    JSObject processResult = processPickedImages(imageUri);
+                    if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
+                        call.reject(processResult.getString("error"));
+                        return;
+                    } else {
+                        photos.put(processResult);
+                    }
+                } else if (data.getExtras() != null) {
+                    Bundle bundle = data.getExtras();
+                    if (bundle.keySet().contains("selectedItems")) {
+                        ArrayList<Parcelable> fileUris = bundle.getParcelableArrayList("selectedItems");
+                        if (fileUris != null) {
+                            for (Parcelable fileUri : fileUris) {
+                                if (fileUri instanceof Uri) {
+                                    Uri imageUri = (Uri) fileUri;
+                                    try {
+                                        JSObject processResult = processPickedImages(imageUri);
+                                        if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
+                                            call.reject(processResult.getString("error"));
+                                            return;
+                                        } else {
+                                            photos.put(processResult);
                                         }
+                                    } catch (SecurityException ex) {
+                                        call.reject("SecurityException");
                                     }
                                 }
                             }
                         }
                     }
-                    ret.put("photos", photos);
-                    call.resolve(ret);
                 }
-            );
+                ret.put("photos", photos);
+                call.resolve(ret);
+            });
         } else {
             call.reject("No images picked");
         }
@@ -501,6 +513,7 @@ public class CameraPlugin extends Plugin {
     /**
      * Save the modified image on the same path,
      * or on a temporary location if it's a content url
+     *
      * @param uri
      * @param is
      * @return
@@ -544,6 +557,7 @@ public class CameraPlugin extends Plugin {
 
     /**
      * After processing the image, return the final result back to the caller.
+     *
      * @param call
      * @param bitmap
      * @param u
@@ -598,12 +612,7 @@ public class CameraPlugin extends Plugin {
                         isSaved = false;
                     }
                 } else {
-                    String inserted = MediaStore.Images.Media.insertImage(
-                        getContext().getContentResolver(),
-                        fileToSavePath,
-                        fileToSave.getName(),
-                        ""
-                    );
+                    String inserted = MediaStore.Images.Media.insertImage(getContext().getContentResolver(), fileToSavePath, fileToSave.getName(), "");
 
                     if (inserted == null) {
                         isSaved = false;
@@ -668,7 +677,8 @@ public class CameraPlugin extends Plugin {
         try {
             bis = new ByteArrayInputStream(bitmapOutputStream.toByteArray());
             newUri = saveImage(u, bis);
-        } catch (IOException ex) {} finally {
+        } catch (IOException ex) {
+        } finally {
             if (bis != null) {
                 try {
                     bis.close();
@@ -683,6 +693,7 @@ public class CameraPlugin extends Plugin {
     /**
      * Apply our standard processing of the bitmap, returning a new one and
      * recycling the old one in the process
+     *
      * @param bitmap
      * @param imageUri
      * @param exif
@@ -798,9 +809,7 @@ public class CameraPlugin extends Plugin {
             int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
             editIntent.addFlags(flags);
             editIntent.putExtra(MediaStore.EXTRA_OUTPUT, editUri);
-            List<ResolveInfo> resInfoList = getContext()
-                .getPackageManager()
-                .queryIntentActivities(editIntent, PackageManager.MATCH_DEFAULT_ONLY);
+            List<ResolveInfo> resInfoList = getContext().getPackageManager().queryIntentActivities(editIntent, PackageManager.MATCH_DEFAULT_ONLY);
             for (ResolveInfo resolveInfo : resInfoList) {
                 String packageName = resolveInfo.activityInfo.packageName;
                 getContext().grantUriPermission(packageName, editUri, flags);
