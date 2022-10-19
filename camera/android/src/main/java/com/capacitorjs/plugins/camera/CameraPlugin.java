@@ -17,8 +17,10 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Base64;
+
 import androidx.activity.result.ActivityResult;
 import androidx.core.content.FileProvider;
+
 import com.getcapacitor.FileUtils;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -31,6 +33,7 @@ import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -45,25 +48,30 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
 import org.json.JSONException;
 
 /**
  * The Camera plugin makes it easy to take a photo or have the user select a photo
  * from their albums.
- *
+ * <p>
  * On Android, this plugin sends an intent that opens the stock Camera app.
- *
+ * <p>
  * Adapted from https://developer.android.com/training/camera/photobasics.html
  */
 @CapacitorPlugin(
-    name = "Camera",
-    permissions = {
-        @Permission(strings = { Manifest.permission.CAMERA }, alias = CameraPlugin.CAMERA),
-        @Permission(
-            strings = { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE },
-            alias = CameraPlugin.PHOTOS
-        )
-    }
+        name = "Camera",
+        permissions = {
+                @Permission(strings = {Manifest.permission.CAMERA}, alias = CameraPlugin.CAMERA),
+                @Permission(
+                        strings = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        alias = CameraPlugin.PHOTOS
+                ),
+                @Permission(
+                        strings = {Manifest.permission.READ_MEDIA_IMAGES},
+                        alias = CameraPlugin.PHOTOS_TIRAMISU
+                )
+        }
 )
 public class CameraPlugin extends Plugin {
 
@@ -141,17 +149,17 @@ public class CameraPlugin extends Plugin {
         final CameraBottomSheetDialogFragment fragment = new CameraBottomSheetDialogFragment();
         fragment.setTitle(call.getString("promptLabelHeader", "Photo"));
         fragment.setOptions(
-            options,
-            index -> {
-                if (index == 0) {
-                    settings.setSource(CameraSource.PHOTOS);
-                    openPhotos(call);
-                } else if (index == 1) {
-                    settings.setSource(CameraSource.CAMERA);
-                    openCamera(call);
-                }
-            },
-            () -> call.reject("User cancelled photos app")
+                options,
+                index -> {
+                    if (index == 0) {
+                        settings.setSource(CameraSource.PHOTOS);
+                        openPhotos(call);
+                    } else if (index == 1) {
+                        settings.setSource(CameraSource.CAMERA);
+                        openCamera(call);
+                    }
+                },
+                () -> call.reject("User cancelled photos app")
         );
         fragment.show(getActivity().getSupportFragmentManager(), "capacitorModalsActionSheet");
     }
@@ -212,8 +220,8 @@ public class CameraPlugin extends Plugin {
     /**
      * Completes the plugin call after a camera permission request
      *
-     * @see #getPhoto(PluginCall)
      * @param call the plugin call
+     * @see #getPhoto(PluginCall)
      */
     @PermissionCallback
     private void cameraPermissionsCallback(PluginCall call) {
@@ -225,10 +233,12 @@ public class CameraPlugin extends Plugin {
                 call.reject(PERMISSION_DENIED_ERROR_CAMERA);
                 return;
             } else if (settings.getSource() == CameraSource.PHOTOS) {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && getPermissionState(PHOTOS) != PermissionState.GRANTED) {
-                    Logger.debug(getLogTag(), "User denied photos permission: " + getPermissionState(PHOTOS).toString());
-                    call.reject(PERMISSION_DENIED_ERROR_PHOTOS);
-                    return;
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    if (getPermissionState(PHOTOS) != PermissionState.GRANTED) {
+                        Logger.debug(getLogTag(), "User denied photos permission: " + getPermissionState(PHOTOS).toString());
+                        call.reject(PERMISSION_DENIED_ERROR_PHOTOS);
+                        return;
+                    }
                 } else if (getPermissionState(PHOTOS_TIRAMISU) != PermissionState.GRANTED) {
                     Logger.debug(getLogTag(), "User denied photos permission: " + getPermissionState(PHOTOS_TIRAMISU).toString());
                     call.reject(PERMISSION_DENIED_ERROR_PHOTOS);
@@ -305,7 +315,7 @@ public class CameraPlugin extends Plugin {
             try {
                 if (multiple) {
                     intent.putExtra("multi-pick", multiple);
-                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] { "image/*" });
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*"});
                     startActivityForResult(call, intent, "processPickedImages");
                 } else {
                     startActivityForResult(call, intent, "processPickedImage");
