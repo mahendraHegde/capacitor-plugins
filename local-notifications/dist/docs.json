@@ -475,7 +475,7 @@
               "name": "since"
             }
           ],
-          "docs": "The notification identifier.",
+          "docs": "The notification identifier.\nOn Android it's a 32-bit int.\nSo the value should be between -2147483648 and 2147483647 inclusive.",
           "complexTypes": [],
           "type": "number"
         },

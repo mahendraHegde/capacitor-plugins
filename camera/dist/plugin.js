@@ -101,7 +101,7 @@ var capacitorCamera = (function (exports, core) {
                 }
             }
             else {
-                console.error(`Unable to load PWA Element 'pwa-camera-modal'. See the docs: https://capacitorjs.com/docs/pwa-elements.`);
+                console.error(`Unable to load PWA Element 'pwa-camera-modal'. See the docs: https://capacitorjs.com/docs/web/pwa-elements.`);
                 this.fileInputExperience(options, resolve);
             }
         }

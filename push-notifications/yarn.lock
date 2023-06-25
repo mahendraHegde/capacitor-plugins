@@ -65,14 +65,14 @@
   dependencies:
     tslib "^2.1.0"
 
-"@capacitor/docgen@0.0.18":
-  version "0.0.18"
-  resolved "https://registry.yarnpkg.com/@capacitor/docgen/-/docgen-0.0.18.tgz#95cf7b20c4faf674c9b30365a7d510ebedc482c7"
-  integrity sha512-BVqzrbSi9u5IaKRLlG0H/ZW8M23FDJpH2018RTGVHRn2Yk3na9jOcItBc3r+rYiwgRgAHylNw9Lt7+lWmJBD3Q==
+"@capacitor/docgen@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@capacitor/docgen/-/docgen-0.2.0.tgz#712c57fe7068db871db27764446e2c431450205d"
+  integrity sha512-JoKuEx4Ep9LVnTY1I4zaoQPlxy+AWVMwwOSou/U9f/nXsL391aBRH7hC12lKNZGetiComnt369vQ+/r7n9iXfQ==
   dependencies:
-    "@types/node" "^14.17.3"
-    colorette "^1.2.2"
-    github-slugger "^1.3.0"
+    "@types/node" "^14.18.0"
+    colorette "^2.0.16"
+    github-slugger "^1.4.0"
     minimist "^1.2.5"
     typescript "~4.2.4"
 
@@ -257,10 +257,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.8.3.tgz#ce750ab4017effa51aed6a7230651778d54e327c"
   integrity sha512-0os9vz6BpGwxGe9LOhgP/ncvYN5Tx1fNcd2TM3rD/aCGBkysb+ZWpXEocG24h6ZzOi13+VB8HndAQFezsSOw1w==
 
-"@types/node@^14.17.3":
-  version "14.18.31"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.31.tgz#4b873dea3122e71af4f77e65ec5841397ff254d3"
-  integrity sha512-vQAnaReSQkEDa8uwAyQby8bYGKu84R/deEc6mg5T8fX6gzCn8QW6rziSgsti1fNvsrswKUKPnVTi7uoB+u62Mw==
+"@types/node@^14.18.0":
+  version "14.18.50"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.50.tgz#c23e357fc76bb61f0fcdaacd18ce1771b8fe6eb4"
+  integrity sha512-DdJP83r2Zp5x32la3jEzjIlB85+2gMPUHP1xFL2xFORzbJ94sNwh4b6ZBaF6EN/7BTII6mba3yakqfLEnt5eZg==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -547,10 +547,10 @@ color-name@~1.1.4:
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
-colorette@^1.2.2:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/colorette/-/colorette-1.4.0.tgz#5190fbb87276259a86ad700bff2c6d6faa3fca40"
-  integrity sha512-Y2oEozpomLn7Q3HFP7dpww7AtMJplbM9lGZP6RDfHqmbeRjiwRg4n6VM6j4KLmRke85uWEI7JqF17f3pqdRA0g==
+colorette@^2.0.16:
+  version "2.0.20"
+  resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.20.tgz#9eb793e6833067f7235902fcd3b09917a000a95a"
+  integrity sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==
 
 commander@^9.3.0:
   version "9.4.1"
@@ -1032,10 +1032,10 @@ get-symbol-description@^1.0.0:
     call-bind "^1.0.2"
     get-intrinsic "^1.1.1"
 
-github-slugger@^1.3.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/github-slugger/-/github-slugger-1.4.0.tgz#206eb96cdb22ee56fdc53a28d5a302338463444e"
-  integrity sha512-w0dzqw/nt51xMVmlaV1+JRzN+oCa1KfcgGEWhxUG16wbdA+Xnt/yoFO8Z8x/V82ZcZ0wy6ln9QDup5avbhiDhQ==
+github-slugger@^1.4.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/github-slugger/-/github-slugger-1.5.0.tgz#17891bbc73232051474d68bd867a34625c955f7d"
+  integrity sha512-wIh+gKBI9Nshz2o46B0B3f5k/W+WI9ZAv6y5Dn5WJ5SK1t0TnDimB4WE5rmTD05ZAIn8HALCZVmCsvj0w0v0lw==
 
 glob-parent@^5.1.2:
   version "5.1.2"

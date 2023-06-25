@@ -287,8 +287,12 @@ extension CameraPlugin: PHPickerViewControllerDelegate {
             result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (reading, _) in
                 if let image = reading as? UIImage {
                     var asset: PHAsset?
-                    if let assetId = result.assetIdentifier {
-                        asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil).firstObject
+                    if #available(iOS 14, *){
+                        //reading assetId shows annoying permission dialog on ios 14+
+                    }else{
+                        if let assetId = result.assetIdentifier {
+                            asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil).firstObject
+                        }
                     }
                     if var processedImage = self?.processedImage(from: image, with: asset?.imageData) {
                         processedImage.flags = .gallery
@@ -441,19 +445,23 @@ private extension CameraPlugin {
             call?.reject("User denied access to photos")
             return
         }
-        // we either already have permission or can prompt
-        if authStatus == .authorized {
-            presentSystemAppropriateImagePicker()
+        //dont want to show permission dialog on ios 14+
+        if #available(iOS 14, *) {
+            presentPhotoPicker()
         } else {
-            PHPhotoLibrary.requestAuthorization({ [weak self] (status) in
-                if status == PHAuthorizationStatus.authorized {
-                    DispatchQueue.main.async { [weak self] in
-                        self?.presentSystemAppropriateImagePicker()
+            if authStatus == .authorized {
+                presentSystemAppropriateImagePicker()
+            } else {
+                PHPhotoLibrary.requestAuthorization({ [weak self] (status) in
+                    if status == PHAuthorizationStatus.authorized {
+                        DispatchQueue.main.async { [weak self] in
+                            self?.presentSystemAppropriateImagePicker()
+                        }
+                    } else {
+                        self?.call?.reject("User denied access to photos")
                     }
-                } else {
-                    self?.call?.reject("User denied access to photos")
-                }
-            })
+                })
+            }
         }
     }
 

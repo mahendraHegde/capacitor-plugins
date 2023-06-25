@@ -164,7 +164,7 @@
             "text": "1.0.0"
           }
         ],
-        "docs": "Request permission to receive push notifications.\n\nOn Android it doesn't prompt for permission because you can always\nreceive push notifications.\n\nOn iOS, the first time you use the function, it will prompt the user\nfor push notification permission and return granted or denied based\non the user selection. On following calls it will currect status of\nthe permission without prompting again.",
+        "docs": "Request permission to receive push notifications.\n\nOn Android it doesn't prompt for permission because you can always\nreceive push notifications.\n\nOn iOS, the first time you use the function, it will prompt the user\nfor push notification permission and return granted or denied based\non the user selection. On following calls it will get the current status of\nthe permission without prompting again.",
         "complexTypes": [
           "PermissionStatus"
         ],
