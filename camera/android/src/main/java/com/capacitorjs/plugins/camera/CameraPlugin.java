@@ -18,11 +18,9 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Base64;
-
 import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
-
 import com.getcapacitor.FileUtils;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -35,7 +33,6 @@ import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -50,15 +47,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
 import org.json.JSONException;
 
 /**
  * The Camera plugin makes it easy to take a photo or have the user select a photo
  * from their albums.
- * <p>
+ *
  * On Android, this plugin sends an intent that opens the stock Camera app.
- * <p>
+ *
  * Adapted from https://developer.android.com/training/camera/photobasics.html
  */
 @SuppressLint("InlinedApi")
@@ -164,17 +160,17 @@ public class CameraPlugin extends Plugin {
         final CameraBottomSheetDialogFragment fragment = new CameraBottomSheetDialogFragment();
         fragment.setTitle(call.getString("promptLabelHeader", "Photo"));
         fragment.setOptions(
-                options,
-                index -> {
-                    if (index == 0) {
-                        settings.setSource(CameraSource.PHOTOS);
-                        openPhotos(call);
-                    } else if (index == 1) {
-                        settings.setSource(CameraSource.CAMERA);
-                        openCamera(call);
-                    }
-                },
-                () -> call.reject("User cancelled photos app")
+            options,
+            index -> {
+                if (index == 0) {
+                    settings.setSource(CameraSource.PHOTOS);
+                    openPhotos(call);
+                } else if (index == 1) {
+                    settings.setSource(CameraSource.CAMERA);
+                    openCamera(call);
+                }
+            },
+            () -> call.reject("User cancelled photos app")
         );
         fragment.show(getActivity().getSupportFragmentManager(), "capacitorModalsActionSheet");
     }
@@ -202,9 +198,9 @@ public class CameraPlugin extends Plugin {
             isFirstRequest = false;
             String[] aliases;
             if (needCameraPerms) {
-                aliases = new String[]{CAMERA, PHOTOS};
+                aliases = new String[] { CAMERA, PHOTOS };
             } else {
-                aliases = new String[]{PHOTOS};
+                aliases = new String[] { PHOTOS };
             }
             requestPermissionForAliases(aliases, call, "cameraPermissionsCallback");
             return false;
@@ -239,8 +235,8 @@ public class CameraPlugin extends Plugin {
     /**
      * Completes the plugin call after a camera permission request
      *
-     * @param call the plugin call
      * @see #getPhoto(PluginCall)
+     * @param call the plugin call
      */
     @PermissionCallback
     private void cameraPermissionsCallback(PluginCall call) {
@@ -354,7 +350,7 @@ public class CameraPlugin extends Plugin {
             try {
                 if (multiple) {
                     intent.putExtra("multi-pick", multiple);
-                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*"});
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] { "image/*" });
                     startActivityForResult(call, intent, "processPickedImages");
                 } else {
                     startActivityForResult(call, intent, "processPickedImage");
@@ -407,13 +403,24 @@ public class CameraPlugin extends Plugin {
         Intent data = result.getData();
         if (data != null) {
             Executor executor = Executors.newSingleThreadExecutor();
-            executor.execute(() -> {
-                JSObject ret = new JSObject();
-                JSArray photos = new JSArray();
-                if (data.getClipData() != null) {
-                    int count = data.getClipData().getItemCount();
-                    for (int i = 0; i < count; i++) {
-                        Uri imageUri = data.getClipData().getItemAt(i).getUri();
+            executor.execute(
+                () -> {
+                    JSObject ret = new JSObject();
+                    JSArray photos = new JSArray();
+                    if (data.getClipData() != null) {
+                        int count = data.getClipData().getItemCount();
+                        for (int i = 0; i < count; i++) {
+                            Uri imageUri = data.getClipData().getItemAt(i).getUri();
+                            JSObject processResult = processPickedImages(imageUri);
+                            if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
+                                call.reject(processResult.getString("error"));
+                                return;
+                            } else {
+                                photos.put(processResult);
+                            }
+                        }
+                    } else if (data.getData() != null) {
+                        Uri imageUri = data.getData();
                         JSObject processResult = processPickedImages(imageUri);
                         if (processResult.getString("error") != null && !processResult.getString("error").isEmpty()) {
                             call.reject(processResult.getString("error"));
@@ -445,17 +452,15 @@ public class CameraPlugin extends Plugin {
                                         } catch (SecurityException ex) {
                                             call.reject("SecurityException");
                                         }
-                                    } catch (SecurityException ex) {
-                                        call.reject("SecurityException");
                                     }
                                 }
                             }
                         }
                     }
+                    ret.put("photos", photos);
+                    call.resolve(ret);
                 }
-                ret.put("photos", photos);
-                call.resolve(ret);
-            });
+            );
         } else {
             call.reject("No images picked");
         }
@@ -565,7 +570,6 @@ public class CameraPlugin extends Plugin {
     /**
      * Save the modified image on the same path,
      * or on a temporary location if it's a content url
-     *
      * @param uri
      * @param is
      * @return
@@ -609,7 +613,6 @@ public class CameraPlugin extends Plugin {
 
     /**
      * After processing the image, return the final result back to the caller.
-     *
      * @param call
      * @param bitmap
      * @param u
@@ -664,7 +667,12 @@ public class CameraPlugin extends Plugin {
                         isSaved = false;
                     }
                 } else {
-                    String inserted = MediaStore.Images.Media.insertImage(getContext().getContentResolver(), fileToSavePath, fileToSave.getName(), "");
+                    String inserted = MediaStore.Images.Media.insertImage(
+                        getContext().getContentResolver(),
+                        fileToSavePath,
+                        fileToSave.getName(),
+                        ""
+                    );
 
                     if (inserted == null) {
                         isSaved = false;
@@ -729,8 +737,7 @@ public class CameraPlugin extends Plugin {
         try {
             bis = new ByteArrayInputStream(bitmapOutputStream.toByteArray());
             newUri = saveImage(u, bis);
-        } catch (IOException ex) {
-        } finally {
+        } catch (IOException ex) {} finally {
             if (bis != null) {
                 try {
                     bis.close();
@@ -745,7 +752,6 @@ public class CameraPlugin extends Plugin {
     /**
      * Apply our standard processing of the bitmap, returning a new one and
      * recycling the old one in the process
-     *
      * @param bitmap
      * @param imageUri
      * @param exif

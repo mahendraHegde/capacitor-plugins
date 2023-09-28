@@ -159,7 +159,7 @@
               "name": "since"
             }
           ],
-          "docs": "The url starting with 'data:image/jpeg;base64,' and the base64 encoded string representation of the image, if using CameraResultType.DataUrl.",
+          "docs": "The url starting with 'data:image/jpeg;base64,' and the base64 encoded string representation of the image, if using CameraResultType.DataUrl.\n\nNote: On web, the file format could change depending on the browser.",
           "complexTypes": [],
           "type": "string | undefined"
         },
@@ -207,7 +207,7 @@
               "name": "since"
             }
           ],
-          "docs": "The format of the image, ex: jpeg, png, gif.\n\niOS and Android only support jpeg.\nWeb supports jpeg and png. gif is only supported if using file input.",
+          "docs": "The format of the image, ex: jpeg, png, gif.\n\niOS and Android only support jpeg.\nWeb supports jpeg, png and gif, but the exact availability may vary depending on the browser.\ngif is only supported if `webUseInput` is set to `true` or if `source` is set to `Photos`.",
           "complexTypes": [],
           "type": "string"
         },
@@ -240,7 +240,7 @@
               "name": "since"
             }
           ],
-          "docs": "The quality of image to return as JPEG, from 0-100",
+          "docs": "The quality of image to return as JPEG, from 0-100\nNote: This option is only supported on Android and iOS",
           "complexTypes": [],
           "type": "number | undefined"
         },
@@ -551,7 +551,7 @@
               "name": "since"
             }
           ],
-          "docs": "The quality of image to return as JPEG, from 0-100",
+          "docs": "The quality of image to return as JPEG, from 0-100\nNote: This option is only supported on Android and iOS.",
           "complexTypes": [],
           "type": "number | undefined"
         },
