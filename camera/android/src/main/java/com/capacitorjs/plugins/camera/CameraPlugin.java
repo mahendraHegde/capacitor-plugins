@@ -343,6 +343,8 @@ public class CameraPlugin extends Plugin {
     }
 
     private void openPhotos(final PluginCall call, boolean multiple, boolean skipPermission) {
+        //[dandelion] to avoid annoying permission dialog that does nothing after user selecting multiple photos on android 14
+        skipPermission = skipPermission == false ? Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE : true;
         if (skipPermission || checkPhotosPermissions(call)) {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, multiple);
